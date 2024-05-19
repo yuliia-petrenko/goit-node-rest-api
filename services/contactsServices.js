@@ -1,56 +1,58 @@
-import * as fs from 'fs/promises';
-import path from 'path';
-import { nanoid } from 'nanoid';
+import Joi from 'joi';
+import mongoose from 'mongoose';
 
-const contactsPath = path.resolve('db', 'contacts.json');
-
-async function readContacts() {
-  const data = await fs.readFile(contactsPath, { encoding: 'utf-8' });
-  return JSON.parse(data);
-}
-
-async function writeContacts(contacts) {
-  await fs.writeFile(contactsPath, JSON.stringify(contacts, undefined, 2));
-}
-
-async function listContacts() {
-  const contacts = await readContacts();
-  return contacts;
-}
-
-async function getContactById(contactId) {
-  const contacts = await readContacts();
-  const contact = contacts.find(contact => contact.id === contactId);
-  return contact || null;
-}
-
-async function removeContact(contactId) {
-  const contacts = await listContacts();
-  const idx = contacts.findIndex(contact => contact.id === contactId);
-  if (idx === -1) return null;
-  const removedContact = contacts.splice(idx, 1)[0];
-  await writeContacts(contacts);
-  return removedContact;
-}
-
-async function addContact({ name, email, phone }) {
-  const contacts = await readContacts();
-  const newContact = { id: nanoid(), name, email, phone };
-  contacts.push(newContact);
-  await writeContacts(contacts);
-  return newContact;
-}
-
-async function updateData(id, updatedData) {
-  const contacts = await readContacts();
-  const contactIdx = contacts.findIndex(contact => contact.id === id);
-  if (contactIdx === -1) {
-    return null;
+const contactSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, 'Name is required'],
+      minlength: 3,
+    },
+    email: {
+      type: String,
+      required: [true, 'Email is required'],
+      unique: true,
+      validate: {
+        validator: value => {
+          return /\S+@\S+\.\S+/.test(value);
+        },
+        message: 'Invalid email format',
+      },
+    },
+    phone: {
+      type: String,
+      required: [true, 'Phone is required'],
+      minlength: 8,
+    },
+    favorite: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  {
+    versionKey: false,
+    timestamps: true,
   }
-  const updatedContact = { ...contacts[contactIdx], ...updatedData };
-  contacts[contactIdx] = updatedContact;
-  await writeContacts(contacts);
-  return updatedContact;
-}
+);
 
-export { listContacts, getContactById, removeContact, addContact, updateData };
+const Contact = mongoose.model('Contact', contactSchema);
+
+export const createContactSchema = Joi.object({
+  name: Joi.string().required().min(3),
+  email: Joi.string().email().required(),
+  phone: Joi.string().required().min(8),
+  favorite: Joi.boolean(),
+});
+
+export const updateContactSchema = Joi.object({
+  name: Joi.string().min(3),
+  email: Joi.string().email(),
+  phone: Joi.string().min(8),
+  favorite: Joi.boolean(),
+});
+
+export const updateFavoriteSchema = Joi.object({
+  favorite: Joi.boolean().required(),
+});
+
+export { Contact };

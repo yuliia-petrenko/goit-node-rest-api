@@ -1,9 +1,10 @@
 import HttpError from '../helpers/HttpError.js';
-// import {
-//   createContactSchema,
-//   updateContactSchema,
-// } from '../schemas/contactsSchemas.js';
-import { Contact } from '../schemas/contactsSchemas.js';
+import {
+  Contact,
+  updateContactSchema,
+  createContactSchema,
+} from '../schemas/contactsSchemas.js';
+import mongoose from 'mongoose';
 
 export const getAllContacts = async (_, res, next) => {
   try {

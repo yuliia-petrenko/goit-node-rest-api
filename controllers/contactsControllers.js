@@ -19,12 +19,12 @@ export const getOneContact = async (req, res, next) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      throw new HttpError(400, 'Invalid ID');
+      throw HttpError(400, 'Invalid ID');
     }
 
     const result = await Contact.findById(id);
     if (!result) {
-      throw new HttpError(404, 'Not found');
+      throw HttpError(404, 'Not found');
     }
     res.status(200).json(result);
   } catch (error) {
@@ -37,12 +37,12 @@ export const deleteContact = async (req, res, next) => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      throw new HttpError(400, 'Invalid ID');
+      throw HttpError(400, 'Invalid ID');
     }
 
     const result = await Contact.findByIdAndDelete(id);
     if (!result) {
-      throw new HttpError(404, 'Not found');
+      throw HttpError(404, 'Not found');
     }
     res.status(200).json(result);
   } catch (error) {
@@ -75,22 +75,22 @@ export const updateContact = async (req, res, next) => {
     const { id } = req.params;
     const updatedData = req.body;
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      throw new HttpError(400, 'Invalid ID');
+      throw HttpError(400, 'Invalid ID');
     }
 
     if (Object.keys(updatedData).length === 0) {
-      throw new HttpError(400, 'Body must have at least one field');
+      throw HttpError(400, 'Body must have at least one field');
     }
     const { error } = updateContactSchema.validate(updatedData);
     if (error) {
-      throw new HttpError(400, error.message);
+      throw HttpError(400, error.message);
     }
     const result = await Contact.findByIdAndUpdate(id, updatedData, {
       new: true,
       runValidators: true,
     });
     if (!result) {
-      throw new HttpError(404, 'Not found');
+      throw HttpError(404, 'Not found');
     }
     res.status(200).json(result);
   } catch (error) {
@@ -104,11 +104,11 @@ export const updateStatusContact = async (req, res, next) => {
     const { favorite } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      throw new HttpError(400, 'Invalid ID');
+      throw HttpError(400, 'Invalid ID');
     }
 
     if (favorite === undefined) {
-      throw new HttpError(400, 'Missing field favorite');
+      throw HttpError(400, 'Missing field favorite');
     }
     const result = await Contact.findByIdAndUpdate(
       id,
@@ -116,7 +116,7 @@ export const updateStatusContact = async (req, res, next) => {
       { new: true, runValidators: true }
     );
     if (!result) {
-      throw new HttpError(404, 'Not found');
+      throw HttpError(404, 'Not found');
     }
     res.status(200).json(result);
   } catch (error) {
